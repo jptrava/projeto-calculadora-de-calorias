@@ -1,64 +1,45 @@
-# Para estimar **quantos minutos de treino por dia** e **quantas calorias consumir por dia** com base na sua massa muscular atual e na sua meta de massa muscular, precisamos considerar alguns fatores:
-
-# ### 1️⃣ **Gasto energético diário total (TDEE)**
-# O TDEE inclui:
-#    - Taxa Metabólica Basal (BMR) → calorias que seu corpo queima em repouso.  
-#    - Gasto com atividades físicas e treino.  
-
-# ### 2️⃣ **Superávit calórico necessário para ganhar massa muscular**  
-#    - Para ganhar músculo, é necessário consumir **calorias acima do TDEE**.  
-#    - O crescimento muscular médio para um iniciante pode ser de **0,2 a 0,5 kg/mês** (ou seja, **~200 a 500 g por mês**).requer cerca de **5.000 a 7.000 kcal de superávit**.  
-
-# ### 3️⃣ **Tempo de treino ideal**  
-#    - O tempo de treino varia, mas geralmente é recomendado **45 a 75 minutos por dia**, 4 a 6 vezes por semana.  
-#    - Volume de treino (séries e repetições) é mais importante que a duração exata.  
-
-
-#    \[
-#    BMR = (10 \times \text{peso}) + (6.25 \times \text{altura}) - (5 \times \text{idade}) + 5
-#    \]
-
-# 2. **Estimamos seu TDEE** multiplicando o BMR pelo fator de atividade:
-
-#    - Sedentário (pouco exercício) → × 1.2  
-#    - Levemente ativo (1 a 3 treinos/semana) → × 1.375  
-#    - Moderadamente ativo (3 a 5 treinos/semana) → × 1.55  
-#    - Muito ativo (6 a 7 treinos/semana) → × 1.725  
-
-# 3. **Calculamos a ingestão calórica necessária** para ganho de músculo:  
-
-#    \[
-#    \text{Calorias diárias} = TDEE + 250 \text{ a } 500 \text{ kcal (superávit)}
-#    \]
-
-# ---
 import tkinter as tk
 from tkinter import messagebox
 import matplotlib.pyplot as plt
 
 class Pessoa:
-    def __init__(self, peso, altura, idade, nivel_atividade):
+    def __init__(self, peso, altura, idade, nivel_atividade, intensidade_atividade):
         self.peso = peso
         self.altura = altura
         self.idade = idade
         self.nivel_atividade = nivel_atividade
+        self.intensidade_atividade = intensidade_atividade
 
     def calcular_BMR(self):
         return (10 * self.peso) + (6.25 * self.altura) - (5 * self.idade) + 5
 
+    def ajustar_intensidade(self, fator_atividade):
+        if self.intensidade_atividade == "leve":
+            return fator_atividade * 1.0  
+        elif self.intensidade_atividade == "moderada":
+            return fator_atividade * 1.1  
+        elif self.intensidade_atividade == "pesada":
+            return fator_atividade * 1.2 
+        else:
+            raise ValueError("Intensidade de atividade inválida!")
+
     def calcular_TDEE(self):
         BMR = self.calcular_BMR()
         if self.nivel_atividade == "sedentário":
-            return BMR * 1.2
+            fator_atividade = 1.2
         elif self.nivel_atividade == "levemente ativo":
-            return BMR * 1.375
+            fator_atividade = 1.375
         elif self.nivel_atividade == "moderadamente ativo":
-            return BMR * 1.55
+            fator_atividade = 1.55
         elif self.nivel_atividade == "muito ativo":
-            return BMR * 1.725
+            fator_atividade = 1.725
         else:
             raise ValueError("Nível de atividade inválido!")
 
+        fator_atividade = self.ajustar_intensidade(fator_atividade)
+        return BMR * fator_atividade
+
+# Função para exibir gráfico
 def exibir_grafico(BMR, TDEE):
     atividades = ["Sedentário", "Levemente ativo", "Moderadamente ativo", "Muito ativo"]
     fatores = [1.2, 1.375, 1.55, 1.725]
@@ -79,8 +60,9 @@ def calcular_resultados():
         altura = float(entry_altura.get())
         idade = int(entry_idade.get())
         atividade = nivel_atividade_var.get()
+        intensidade = intensidade_atividade_var.get()
 
-        pessoa = Pessoa(peso, altura, idade, atividade)
+        pessoa = Pessoa(peso, altura, idade, atividade, intensidade)
         BMR = pessoa.calcular_BMR()
         TDEE = pessoa.calcular_TDEE()
 
@@ -89,9 +71,10 @@ def calcular_resultados():
     except ValueError:
         messagebox.showerror("Erro", "Insira valores válidos!")
 
+# Interface gráfica com Tkinter
 janela = tk.Tk()
 janela.title("Calculadora de TDEE")
-janela.geometry("400x300")
+janela.geometry("500x400")
 janela.configure(bg="#f0f8ff")
 
 titulo = tk.Label(janela, text="Calculadora de TDEE", font=("Helvetica", 16, "bold"), bg="#f0f8ff", fg="#333")
@@ -115,6 +98,10 @@ entry_idade.grid(row=2, column=1, pady=5)
 tk.Label(frame, text="Nível de Atividade:", font=("Helvetica", 12), bg="#f0f8ff").grid(row=3, column=0, pady=5, sticky="w")
 nivel_atividade_var = tk.StringVar(value="sedentário")
 tk.OptionMenu(frame, nivel_atividade_var, "sedentário", "levemente ativo", "moderadamente ativo", "muito ativo").grid(row=3, column=1, pady=5)
+
+tk.Label(frame, text="Intensidade da Atividade:", font=("Helvetica", 12), bg="#f0f8ff").grid(row=4, column=0, pady=5, sticky="w")
+intensidade_atividade_var = tk.StringVar(value="leve")
+tk.OptionMenu(frame, intensidade_atividade_var, "leve", "moderada", "pesada").grid(row=4, column=1, pady=5)
 
 botao_calcular = tk.Button(janela, text="Calcular TDEE", font=("Helvetica", 14), bg="#4CAF50", fg="white", command=calcular_resultados)
 botao_calcular.pack(pady=20)
